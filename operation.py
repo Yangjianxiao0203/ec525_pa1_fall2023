@@ -40,8 +40,12 @@ class Operation(object):
             self.name, args, kwargs, self.parents)
 
         ### YOUR CODE HERE ###
-        
-        raise NotImplementedError
+        for arg in args[0]:
+            if isinstance(arg, Variable):
+                arg.num_children += 1
+        v = Variable(output, self)
+        self.child = v
+        return v
 
     def backward(self, downstream_grad):
         '''wrapper around backward_call to check assertion that forward was
@@ -69,8 +73,9 @@ class Operation(object):
             self.name)
 
         ### YOUR CODE HERE ###
-        
-        raise NotImplementedError 
+        grads = self.backward_call(downstream_grad)
+        for i in range(len(self.parents)):
+            self.parents[i].backward(grads[i])
 
 
     def backward_call(self, downstream_grad):

@@ -20,8 +20,10 @@ class Variable(object):
             self.data = np.expand_dims(self.data, 0)
 
         ### YOUR CODE HERE (IF NEEDED) ###
-
-        
+        self.parent = parent
+        self.grad = None
+        self.num_children = 0
+        self.num_received_children = 0
 
     def detach(self):
         '''detach tensor from computation graph so that gradient computation stops.'''
@@ -58,9 +60,10 @@ class Variable(object):
 
 
         ### YOUR CODE HERE ###
-
-        raise NotImplementedError 
-
+        self.num_received_children += 1
+        self.grad += downstream_grad
+        if self.parent is not None and self.num_received_children >= self.num_children:
+            self.parent.backward(self.grad)
 
 
     

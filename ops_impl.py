@@ -37,7 +37,11 @@ class VariableAdd(Operation):
                 [summand.data.shape for summand in summands])
 
         ### YOUR CODE HERE ###
-        raise NotImplementedError 
+        self.parents = summands
+        output = np.zeros(shape)
+        for summand in summands:
+            output += summand.data
+        return output
 
     def backward_call(self, downstream_grad):
         '''
@@ -50,7 +54,7 @@ class VariableAdd(Operation):
             of the input list to forward_call.'''
 
         ### YOUR CODE HERE ###
-        raise NotImplementedError 
+        return [downstream_grad for _ in range(len(self.parents))]
 
 class VariableMultiply(Operation):
     '''coordinate-wise multiply operation.'''
