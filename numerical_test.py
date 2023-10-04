@@ -231,7 +231,6 @@ class TestAutograd(unittest.TestCase):
 
         self._test_op(input_shapes, output_shape, reference_fn,
                       operation_fn, positive=False)
-
     def test_overload_sub(self):
         '''tests operator overloading of subtraction. Will likely pass
         as soon as test_mul and test_add both pass.'''
@@ -241,8 +240,13 @@ class TestAutograd(unittest.TestCase):
         def reference_fn(args):
             return functools.reduce(lambda x, y: x - y, args)
 
+        #     TODO: sub is different from add and mul above
+        #     the args in operation contains Variable objects
+        #     but the args above is a tuple and args[0] contains the Variable node, why?
+        #     put the breakpoint in  output = self.forward_call(*args, **kwargs) in operation.py and check
         def operation_fn(args):
             return functools.reduce(lambda x, y: x - y, args)
+
 
         self._test_op(input_shapes, output_shape, reference_fn,
                       operation_fn, positive=False)

@@ -20,6 +20,10 @@ class Variable(object):
             self.data = np.expand_dims(self.data, 0)
 
         ### YOUR CODE HERE (IF NEEDED) ###
+        '''
+        Variable node only has one parent operation node, but it can has mutilple operation children,
+        get track of the number of children so that when every children's backward is called, continue to call parent's backward
+        '''
         self.parent = parent
         self.grad = None
         self.num_children = 0

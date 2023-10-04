@@ -40,9 +40,19 @@ class Operation(object):
             self.name, args, kwargs, self.parents)
 
         ### YOUR CODE HERE ###
-        for arg in args[0]:
-            if isinstance(arg, Variable):
-                arg.num_children += 1
+        '''
+        So in operation node: I get the output from subclass forward_call and put it in child, which is a Variable node
+        *args represents the parents Variable nodes, which is a list of Variable nodes
+        all args call this operation node, so their children operations should plus one 
+        '''
+        if isinstance(args[0], list):
+            for arg in args[0]:
+                if isinstance(arg, Variable):
+                    arg.num_children += 1 # Parent Variable Node
+        else:
+            for arg in args:
+                if isinstance(arg, Variable):
+                    arg.num_children += 1
         v = Variable(output, self)
         self.child = v
         return v

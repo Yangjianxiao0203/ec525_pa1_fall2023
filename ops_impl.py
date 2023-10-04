@@ -88,15 +88,25 @@ class VariableMultiply(Operation):
             assert multiplicand.data.shape == shape, "Shape mismatch in Multiply!"
 
         ### YOUR CODE HERE ###
-        raise NotImplementedError 
-
+        self.parents = multiplicands
+        output = np.ones(shape)
+        for multiplicand in multiplicands:
+            output *= multiplicand.data
+        # self.output = output
+        return output
     def backward_call(self, downstream_grad):
-
 
         ### YOUR CODE HERE ###
 
-        raise NotImplementedError 
-
+        #combine parents into one array
+        parents_data = np.array([parent.data for parent in self.parents])
+        res= np.zeros_like(parents_data)
+        #grad for each row is the multiplication of all other rows
+        for i in range(parents_data.shape[0]):
+            keep_rows = np.arange(parents_data.shape[0]) != i
+            grad = np.prod(parents_data[keep_rows], axis=0) * downstream_grad
+            res[i] = grad
+        return res
 
 class ScalarMultiply(Operation):
     '''multiplication by a scalar.'''
@@ -121,12 +131,20 @@ class ScalarMultiply(Operation):
         assert scalar.data.size == 1, "ScalarMultiply called with non-scalar input!"
 
         ### YOUR CODE HERE ###
-        raise NotImplementedError 
+        self.parents = [scalar, tensor]
+        return scalar.data * tensor.data
 
     def backward_call(self, downstream_grad):
 
         ### YOUR CODE HERE  ###
-        raise NotImplementedError 
+        """
+        downstream_grad is the same shape as the tensor
+        so by chain rule: dL/ds = sum_i (dL/dt_i * dt_i/ds) = sum_i (down_stream[i] * t_i) -> a scaler
+        """
+        grad_s = np.sum(downstream_grad * self.parents[1].data)
+        grad_t = downstream_grad * self.parents[0].data
+
+        return [grad_s, grad_t]
 
 
 
