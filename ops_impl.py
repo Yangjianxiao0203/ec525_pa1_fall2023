@@ -167,7 +167,7 @@ class MatrixMultiply(Operation):
             "inputs to matrix multiply are not matrices! A shape: {}, B shape: {}".format(A.data.shape, B.data.shape)
         
         ### YOUR CODE HERE ###
-        self.parents = np.array([A, B])
+        self.parents = [A, B]
         # extract data
         def extract_data(x):
             if isinstance(x, Variable):
