@@ -13,7 +13,7 @@ def numerical_grad(inputs, downstream_grad, evaluate):
     Args:
         inputs: list of np.arrays
         downstream_grad: np.array
-        evaluate: taks a list of input arrays and produces an output array
+        evaluate: takes a list of input arrays and produces an output array
             of same shape as downstream_grad
     returns a list of np.arrays such that the ith element of the return value
         is the gradient of np.sum(evaluate(inputs) * downstream_grad)

@@ -167,13 +167,48 @@ class MatrixMultiply(Operation):
             "inputs to matrix multiply are not matrices! A shape: {}, B shape: {}".format(A.data.shape, B.data.shape)
         
         ### YOUR CODE HERE ###
-        raise NotImplementedError 
+        self.parents = np.array([A, B])
+        # extract data
+        def extract_data(x):
+            if isinstance(x, Variable):
+                return x.data
+            else:
+                return x
+        A = extract_data(A)
+        B = extract_data(B)
+        output = A @ B
+        return output
 
     def backward_call(self, downstream_grad):
 
         ### YOUR CODE HERE ###
+        '''
+        A: m * n
+        B: n * z
+        Z = A @ B
 
-        raise NotImplementedError 
+        dL/dA -> scalar/matrix -> m * n
+        grad = dL/dA = dL/dZ * dZ/dA = downstream * dZ/dA -> downstream: scalar/matrix -> m * z
+        grad(i,j) = dL/dA(i,j)
+        Because that Z(i,k) = sum_j(A(i,j) * B(j,k)), in Z, I can ignore all other rows except i-th row
+        dL/dA(i,j) = sum_k(dL/dZ(i,k) * dZ(i,k)/dA(i,j)) = sum_k(dL/dZ(i,k) * B(j,k))
+        grad(i,j) = sum_k(downstream(i,k) * B(j,k)) = sum_k(downstream(i,k) * B.T(k,j))  => find out it's matrix multiply
+        grad = downstream @ B.T
+
+        Same story for dL/dB
+        dL/dB -> n * z
+        grad = dL/dB = dL/dZ * dZ/dB = downstream * dZ/dB -> downstream: scalar/matrix -> m * z
+        grad(i,j) = dL/dB(i,j)
+        Because that Z(k,j) = sum_i(A(k,i)*B(i,j)), in Z, I can ignore all other columns except j-th column
+        grad(i,j) = sum_k(dL/dZ(k,j) * dZ(k,j)/dB(i,j)) = sum_k(dL/dZ(k,j) * A(k,i))
+        grad(i,j) = sum_k(downstream(k,j) * A(k,i)) = sum_k(A.T(i,k) * downstream(k,j)) => find out it's matrix multiply
+        grad = A.T @ downstream
+        '''
+        A = self.parents[0].data
+        B = self.parents[1].data
+        grad_A = downstream_grad @ B.T
+        grad_B = A.T @ downstream_grad
+        return [grad_A, grad_B]
 
 
 class HingeLoss(Operation):
@@ -186,7 +221,15 @@ class HingeLoss(Operation):
     "label" is an integer in [0,..., C-1].
     The multi-class hinge loss is given by the (unweighted) formula here:
     https://pytorch.org/docs/stable/generated/torch.nn.MultiMarginLoss.html
+
+    '''
+
+    '''
+    formula:
+    loss(x, class) = sum_i (max(0, 1 - score[class] + x[i]))) / N where i!= class
     
+    for two-class case
+    loss(x, class) = max(0, 1 - score[class]*y)
     '''
 
     def __init__(self, label):
@@ -203,8 +246,19 @@ class HingeLoss(Operation):
         '''
 
         ### YOUR CODE HERE ###
+        self.parents = [scores]
+        self.output = scores.data
+        correct_score = scores.data[self.label]
+        wrong_scores = np.delete(scores.data, self.label)
+        def hinge_loss_each_wrong_class(x,correct):
+            return np.maximum(0, 1 - correct + x)
+        vetorized_hinge_loss = np.vectorize(hinge_loss_each_wrong_class)
+        loss = sum(vetorized_hinge_loss(wrong_scores, correct_score))/scores.data.shape[0]
+        # for compute gradient
+        # self.mask = scores.data > correct_score - 1
+        self.mask = np.maximum(0,1 - correct_score + scores.data) > 0
 
-        raise NotImplementedError 
+        return loss
 
     def backward_call(self, downstream_grad):
         '''
@@ -218,8 +272,16 @@ class HingeLoss(Operation):
         '''
 
         ### YOUR CODE HERE ###
+        # self.mask = scores.data > correct_score
+        # grad = 0 if scores.data <= correct_score else 1
+        grad = np.zeros(self.output.shape)
+        if isinstance(downstream_grad, np.ndarray) and downstream_grad.ndim > 0:
+            downstream_grad = downstream_grad[0]
+        grad[self.mask] = downstream_grad * 1 / self.output.shape[0]
+        has_grad_num = np.sum(self.mask) - 1 # exclude correct class
+        grad[self.label] = - downstream_grad * has_grad_num / self.output.shape[0]
+        return [grad]
 
-        raise NotImplementedError 
 
 class Power(Operation):
     '''raise to a power'''
@@ -334,6 +396,7 @@ class TensorDot(Operation):
         return np.tensordot(A.data, B.data, dims_to_contract)
 
     def backward_call(self, downstream_grad):
+        #TODO: I don't understand this code
         A = self.parents[0]
         B = self.parents[1]
         A_indices = np.arange(0, len(A.data.shape) - self.dims_to_contract)
