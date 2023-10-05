@@ -35,6 +35,16 @@ def loss_fn(params, data):
     '''
 
     ### YOUR CODE HERE ###
+    #deconstruct params
+    weights, bias = params # weights: 10 * 784, bias: scaler
+    features, label = data # features: 784 * 1, label: scaler
+
+    scores = get_scores(features, params) # 10 * 1
+    hinge = ops.HingeLoss(label)
+    loss = hinge(scores) # scaler
+    loss = Variable(loss)
+    correct = float(np.argmax(scores) == label)
+
     return loss, correct
 
 def get_scores(features, params):

@@ -18,8 +18,14 @@ def SGD(loss_fn, params, data, learning_rate):
     '''
 
     ### YOUR CODE HERE ###
-
-
+    loss, correct = loss_fn(params, data)
+    #compute all grad
+    loss.backward()
+    new_params = []
+    for param in params:
+        new_param = param.data - learning_rate * param.grad
+        new_param = Variable(new_param)
+        new_params.append(new_param)
     return new_params, correct
 
 
