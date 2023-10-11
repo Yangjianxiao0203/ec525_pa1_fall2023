@@ -64,7 +64,7 @@ def loss_fn(params, data):
     scores = get_scores(features, params) # 10 * 1
     hinge = ops.HingeLoss(label)
     loss = hinge(scores) # scaler
-    correct = float(np.argmax(scores) == label)
+    correct = float(np.argmax(scores.data) == label)
 
     #for test
     # if correct == 1.0 :

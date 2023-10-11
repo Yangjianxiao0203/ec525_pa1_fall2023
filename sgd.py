@@ -19,7 +19,7 @@ def SGD(loss_fn, params, data, learning_rate):
 
     ### YOUR CODE HERE ###
     loss, correct = loss_fn(params, data)
-    print("loss: {}, correct: {}".format(loss.data, correct))
+    # print("loss: {}, correct: {}".format(loss.data, correct))
     #TODO: why many loss are 0.0 and correct is also 0.0?
     loss.backward()
     new_params = []
